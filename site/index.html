@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reto Zikit — Evaluación</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;
+    --series-2:       #eb6834;
+    --series-other:   #898781;
+    --accent:         #1f2d3d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --series-1:       #3987e5;
+      --series-2:       #d95926;
+      --series-other:   #898781;
+      --accent:         #3a4d63;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --series-1:       #3987e5;
+    --series-2:       #d95926;
+    --series-other:   #898781;
+    --accent:         #3a4d63;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+  }
+  header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-1);
+  }
+  header h1 { margin: 0 0 2px 0; font-size: 19px; }
+  header p { margin: 0; font-size: 13px; color: var(--text-secondary); }
+
+  nav.tabs {
+    display: flex; gap: 8px;
+    padding: 14px 24px 0;
+    max-width: 760px; margin: 0 auto;
+  }
+  nav.tabs button {
+    flex: 1;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+  }
+  nav.tabs button.active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 20px 24px 60px;
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+
+  label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin: 14px 0 4px; }
+  label:first-of-type { margin-top: 0; }
+  input[type=text], select, textarea {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 1px solid var(--baseline);
+    border-radius: 6px;
+    background: var(--surface-1);
+    color: var(--text-primary);
+    font-family: inherit;
+  }
+  textarea { min-height: 70px; resize: vertical; }
+
+  .criterio-row { margin: 14px 0; }
+  .criterio-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .criterio-head .nombre { font-size: 13px; font-weight: 600; }
+  .criterio-head .valor { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .criterio-desc { font-size: 11.5px; color: var(--text-muted); margin: 2px 0 6px; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+
+  .total-box {
+    margin-top: 18px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--page);
+    border: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .total-box .lbl { font-size: 12.5px; color: var(--text-secondary); font-weight: 600; }
+  .total-box .val { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  button.submit {
+    margin-top: 16px;
+    width: 100%;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  button.submit:disabled { opacity: 0.6; cursor: default; }
+
+  .msg { margin-top: 10px; font-size: 13px; text-align: center; }
+  .msg.ok { color: #0ca30c; }
+  .msg.err { color: #d03b3b; }
+
+  /* Consultar panel */
+  .legend { display: flex; gap: 16px; margin-bottom: 14px; font-size: 12.5px; color: var(--text-secondary); }
+  .legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+
+  .team-block { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--gridline); }
+  .team-block:last-child { border-bottom: none; }
+  .team-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .team-head .nombre { font-size: 15px; font-weight: 700; }
+  .team-head .promedio { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+  .team-head .promedio .lbl { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-right: 4px; }
+
+  .bar-row { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .bar-row .jlabel { width: 92px; font-size: 11.5px; color: var(--text-secondary); flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track { flex: 1; height: 14px; background: var(--gridline); border-radius: 4px; position: relative; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .bar-score { width: 32px; text-align: right; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+  .refresh-btn {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    background: none; border: 1px solid var(--baseline); border-radius: 6px;
+    padding: 5px 10px; cursor: pointer; margin-bottom: 14px;
+  }
+  .empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 30px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Reto Zikit — "Antes de que suene el teléfono"</h1>
+  <p>Panel de evaluación del jurado</p>
+</header>
+
+<nav class="tabs">
+  <button id="tab-evaluar" class="active" onclick="showPanel('evaluar')">Evaluar</button>
+  <button id="tab-consultar" onclick="showPanel('consultar')">Consultar evaluación</button>
+</nav>
+
+<main>
+
+  <section id="panel-evaluar" class="panel active">
+    <div class="card">
+      <label for="equipo">Equipo</label>
+      <input type="text" id="equipo" placeholder="Nombre del equipo">
+
+      <label for="jurado">Jurado</label>
+      <input type="text" id="jurado" placeholder="Tu nombre">
+
+      <div id="criterios"></div>
+
+      <div class="total-box">
+        <span class="lbl">TOTAL</span>
+        <span class="val"><span id="total-val">0</span> / 100</span>
+      </div>
+
+      <button class="submit" id="btn-guardar" onclick="guardarEvaluacion()">Guardar evaluación</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </section>
+
+  <section id="panel-consultar" class="panel">
+    <button class="refresh-btn" onclick="cargarEvaluaciones()">↻ Actualizar</button>
+    <div class="legend" id="legend"></div>
+    <div class="card" id="resultados">
+      <div class="empty">Cargando…</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const API_URL = "https://d9jgpj02k3.execute-api.us-east-1.amazonaws.com/";
+
+const CRITERIOS = [
+  { key: "comprension",     nombre: "Comprensión del problema",     max: 20, desc: "Distingue señal real de ruido/señuelo; entiende el contexto del negocio." },
+  { key: "deteccion",       nombre: "Detección de incidentes",      max: 25, desc: "Cantidad y variedad de incidentes detectados (piso: al menos 3)." },
+  { key: "falsas_alarmas",  nombre: "Falsas alarmas",               max: 15, desc: "No alerta por cada línea de log ni por eventos esperados del negocio." },
+  { key: "calidad_tecnica", nombre: "Calidad técnica",              max: 25, desc: "Prototipo funcional, maneja datos sucios, correlaciona fuentes." },
+  { key: "presentacion",    nombre: "Presentación y comunicación",  max: 15, desc: "Claridad para público técnico y no técnico; trabajo en equipo." },
+];
+
+function showPanel(name) {
+  document.getElementById('panel-evaluar').classList.toggle('active', name === 'evaluar');
+  document.getElementById('panel-consultar').classList.toggle('active', name === 'consultar');
+  document.getElementById('tab-evaluar').classList.toggle('active', name === 'evaluar');
+  document.getElementById('tab-consultar').classList.toggle('active', name === 'consultar');
+  if (name === 'consultar') cargarEvaluaciones();
+}
+
+function buildForm() {
+  const cont = document.getElementById('criterios');
+  cont.innerHTML = CRITERIOS.map(c => `
+    <div class="criterio-row">
+      <div class="criterio-head">
+        <span class="nombre">${c.nombre}</span>
+        <span class="valor"><span id="val-${c.key}">0</span> / ${c.max}</span>
+      </div>
+      <div class="criterio-desc">${c.desc}</div>
+      <input type="range" id="range-${c.key}" min="0" max="${c.max}" value="0" step="1"
+             oninput="onSlide('${c.key}')">
+    </div>
+  `).join('');
+}
+
+function onSlide(key) {
+  const v = document.getElementById('range-' + key).value;
+  document.getElementById('val-' + key).textContent = v;
+  updateTotal();
+}
+
+function updateTotal() {
+  let total = 0;
+  CRITERIOS.forEach(c => total += Number(document.getElementById('range-' + c.key).value));
+  document.getElementById('total-val').textContent = total;
+}
+
+async function guardarEvaluacion() {
+  const equipo = document.getElementById('equipo').value.trim();
+  const jurado = document.getElementById('jurado').value.trim();
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById('btn-guardar');
+
+  if (!equipo || !jurado) {
+    msg.textContent = 'Completa el nombre del equipo y tu nombre.';
+    msg.className = 'msg err';
+    return;
+  }
+
+  const payload = { action: 'save', equipo, jurado, notas: document.getElementById('notas') ? '' : '' };
+  CRITERIOS.forEach(c => payload[c.key] = Number(document.getElementById('range-' + c.key).value));
+  payload.notas = document.getElementById('notas-area').value.trim();
+
+  btn.disabled = true;
+  msg.textContent = 'Guardando…';
+  msg.className = 'msg';
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Error al guardar');
+    msg.textContent = `Evaluación guardada (${equipo} — ${jurado}, total ${data.item.total}/100).`;
+    msg.className = 'msg ok';
+  } catch (e) {
+    msg.textContent = 'Error: ' + e.message;
+    msg.className = 'msg err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function colorForJudge(name, mapa) {
+  if (!mapa.has(name)) {
+    const idx = mapa.size;
+    const color = idx === 0 ? 'var(--series-1)' : idx === 1 ? 'var(--series-2)' : 'var(--series-other)';
+    mapa.set(name, color);
+  }
+  return mapa.get(name);
+}
+
+async function cargarEvaluaciones() {
+  const cont = document.getElementById('resultados');
+  const legend = document.getElementById('legend');
+  cont.innerHTML = '<div class="empty">Cargando…</div>';
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'list' })
+    });
+    const data = await res.json();
+    const items = data.items || [];
+
+    if (items.length === 0) {
+      cont.innerHTML = '<div class="empty">Todavía no hay evaluaciones guardadas.</div>';
+      legend.innerHTML = '';
+      return;
+    }
+
+    const judgeColor = new Map();
+    items.forEach(it => colorForJudge(it.jurado, judgeColor));
+
+    legend.innerHTML = [...judgeColor.entries()].map(([name, color]) =>
+      `<span><span class="sw" style="background:${color}"></span>${name}</span>`
+    ).join('');
+
+    const porEquipo = new Map();
+    items.forEach(it => {
+      if (!porEquipo.has(it.equipo)) porEquipo.set(it.equipo, []);
+      porEquipo.get(it.equipo).push(it);
+    });
+
+    const equipos = [...porEquipo.entries()].map(([equipo, evals]) => {
+      const promedio = evals.reduce((s, e) => s + e.total, 0) / evals.length;
+      return { equipo, evals, promedio };
+    }).sort((a, b) => b.promedio - a.promedio);
+
+    cont.innerHTML = equipos.map(({ equipo, evals, promedio }) => `
+      <div class="team-block">
+        <div class="team-head">
+          <span class="nombre">${equipo}</span>
+          <span class="promedio"><span class="lbl">PROMEDIO</span>${promedio.toFixed(1)} / 100</span>
+        </div>
+        ${evals.map(e => `
+          <div class="bar-row">
+            <span class="jlabel">${e.jurado}</span>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${e.total}%; background:${judgeColor.get(e.jurado)}"></div>
+            </div>
+            <span class="bar-score">${e.total}</span>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+  } catch (e) {
+    cont.innerHTML = '<div class="empty">Error al cargar: ' + e.message + '</div>';
+  }
+}
+
+buildForm();
+document.getElementById('criterios').insertAdjacentHTML('afterend', `
+  <label for="notas-area">Notas / observaciones</label>
+  <textarea id="notas-area" placeholder="Observaciones adicionales…"></textarea>
+`);
+</script>
+
+</body>
+</html>
