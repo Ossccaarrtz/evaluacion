@@ -1,0 +1,50 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "site/**"
+      - "lambda/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  S3_BUCKET: zikit-rubrica-040396448313
+  CLOUDFRONT_DISTRIBUTION_ID: EFMIIV0NBPMG8
+  LAMBDA_FUNCTION_NAME: ZikitRubricaAPI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar credenciales AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::040396448313:role/ZikitRubricaGitHubDeployRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Desplegar frontend a S3
+        run: |
+          aws s3 cp site/index.html "s3://$S3_BUCKET/index.html" --content-type "text/html"
+
+      - name: Invalidar cache de CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --paths "/index.html" "/"
+
+      - name: Desplegar Lambda
+        run: |
+          cd lambda
+          zip -q lambda.zip index.mjs
+          aws lambda update-function-code \
+            --function-name "$LAMBDA_FUNCTION_NAME" \
+            --zip-file fileb://lambda.zip

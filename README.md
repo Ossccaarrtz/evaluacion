@@ -24,7 +24,21 @@ lambda/index.mjs   → Lambda (Node 20) que atiende "save" y "list" vía POST
 - **Datos**: tabla DynamoDB `ZikitEvaluaciones`, llave `equipo` (partition) +
   `jurado` (sort).
 
-## Desplegar
+## Despliegue automático
+
+Cada push a `master` que toque `site/**` o `lambda/**` dispara
+`.github/workflows/deploy.yml`, que:
+
+1. Se autentica contra AWS vía OIDC (sin llaves guardadas en el repo) usando
+   el rol `ZikitRubricaGitHubDeployRole`, con permisos acotados solo a:
+   subir el objeto del sitio al bucket S3, invalidar la distribución de
+   CloudFront y actualizar el código de la Lambda.
+2. Sube `site/index.html` al bucket S3 e invalida la cache de CloudFront.
+3. Empaqueta y publica `lambda/index.mjs` como el código de la Lambda.
+
+El sitio queda disponible en: https://d2kmi3g3zq70nw.cloudfront.net/
+
+## Desplegar desde cero (primera vez)
 
 1. Crear la tabla DynamoDB:
    ```
